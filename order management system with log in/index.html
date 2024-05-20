@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <title>Order Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            display: none;
+        }        
+
+
+        button:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        
+        .total, .change, .cash {
+            text-align: right;
+            padding: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .switch {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .switch a {
+            cursor: pointer;
+            color: #4CAF50;
+            text-decoration: none;
+        }
+    </style>    
+    <script>
+        function showOrderManagement() {
+            document.querySelector('.auth-container').style.display = 'none';
+            document.querySelector('.container').style.display = 'block';
+        }
+
+        function toggleForm(showLogin) {
+            if (showLogin) {
+                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('registerForm').style.display = 'none';
+            } else {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('registerForm').style.display = 'block';
+            }
+        }
+
+        function calculateTotal() {
+            const rows = document.querySelectorAll(".order-row");
+            let totalAmount = 0;
+            rows.forEach(row => {
+                const price = parseFloat(row.querySelector(".price").value) || 0;
+                const quantity = parseInt(row.querySelector(".quantity").value) || 0;
+                const amount = price * quantity;
+                row.querySelector(".amount").textContent = amount.toFixed(2);
+                totalAmount += amount;
+            });
+            document.getElementById("totalAmount").textContent = totalAmount.toFixed(2);
+            calculateChange();
+        }
+
+        function calculateChange() {
+            const totalAmount = parseFloat(document.getElementById("totalAmount").textContent) || 0;
+            const cashReceived = parseFloat(document.getElementById("cashReceived").value) || 0;
+            const change = cashReceived - totalAmount;
+            document.getElementById("changeAmount").textContent = change.toFixed(2);
+        }
+
+        function addRow() {
+            const table = document.getElementById("orderTable");
+            const row = table.insertRow();
+            row.classList.add("order-row");
+            row.innerHTML = `
+                <td><input type="text" class="product-name" placeholder="Product Name"></td>
+                <td><input type="number" class="price" step="0.01" placeholder="Price" oninput="calculateTotal()"></td>
+                <td><input type="number" class="quantity" placeholder="Quantity" oninput="calculateTotal()"></td>
+                <td class="amount">0.00</td>
+            `;
+        }
+
+        function removeRow() {
+            const table = document.getElementById("orderTable");
+            const rowCount = table.rows.length;
+            if (rowCount > 2) {
+                table.deleteRow(rowCount - 1);
+                calculateTotal();
+            }
+        }
+
+        window.onload = function() {
+            document.getElementById("addRowBtn").onclick = addRow;
+            document.getElementById("removeRowBtn").onclick = removeRow;
+            document.getElementById("cashReceived").oninput = calculateChange;
+
+            // handling login and registration
+            document.getElementById("loginForm").onsubmit = function(event) {
+                event.preventDefault();
+                // authentication
+                showOrderManagement();
+            };
+            document.getElementById("registerForm").onsubmit = function(event) {
+                event.preventDefault();
+                //registration
+                toggleForm(true);
+            };
+
+            document.getElementById("showRegisterForm").onclick = function() {
+                toggleForm(false);
+            };
+
+            document.getElementById("showLoginForm").onclick = function() {
+                toggleForm(true);
+            };
+        };
+    </script>
+</head>
+<body>
+    <div class="auth-container">
+        <h2>Order Management System</h2>
+        <form id="loginForm">
+            <h3>Login</h3>
+            <input type="text" id="loginUsername" placeholder="Username" required>
+            <input type="password" id="loginPassword" placeholder="Password" required>
+            <button type="submit">Login</button>
+            <div class="switch">
+                <p>Don't have an account? <a id="showRegisterForm">Register</a></p>
+            </div>
+        </form>
+        <form id="registerForm" style="display: none;">
+            <h3>Register</h3>
+            <input type="text" id="registerUsername" placeholder="Username" required>
+            <input type="password" id="registerPassword" placeholder="Password" required>
+            <button type="submit">Register</button>
+            <div class="switch">
+                <p>Already have an account? <a id="showLoginForm">Login</a></p>
+            </div>
+        </form>
+    </div>
+
+    <div class="container">
+        <h1>Welcome to the Canteen! Here are the prices of the Menu</h1>
+        <ul>
+         <li> Fishball - 30 PHP</li>
+         <li> Kikiam - 40 PHP</li>
+         <li> Corndog - 50 PHP</li>
+       </ul>
+    
+        <table id="orderTable">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="order-row">
+                    <td><input type="text" class="product-name" placeholder="Product Name"></td>
+                    <td><input type="number" class="price" step="0.01" placeholder="Price" oninput="calculateTotal()"></td>
+                    <td><input type="number" class="quantity" placeholder="Quantity" oninput="calculateTotal()"></td>
+                    <td class="amount">0.00</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="buttons">
+            <button id="addRowBtn">Add Row</button>
+            <button id="removeRowBtn">Remove Row</button>
+        </div>
+        <div class="total">
+            Total Amount: PHP<span id="totalAmount">0.00</span>
+        </div>
+        <div class="cash">
+            <label for="cashReceived">Cash Received: PHP</label>
+            <input type="number" id="cashReceived" class="cash-input" placeholder="Enter cash received">
+        </div>
+        <div class="change">
+            Change: PHP<span id="changeAmount">0.00</span>
+        </div>
+    </div>
+</body>
+</html>
